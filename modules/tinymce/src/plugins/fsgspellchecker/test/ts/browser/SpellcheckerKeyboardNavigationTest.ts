@@ -3,6 +3,7 @@ import { Assert, UnitTest } from '@ephox/bedrock-client';
 import { SugarElement } from '@ephox/sugar';
 import { TinyLoader } from '@ephox/wrap-mcagar';
 
+import Editor from 'tinymce/core/api/Editor';
 import Tools from 'tinymce/core/api/util/Tools';
 import * as Options from 'tinymce/plugins/fsgspellchecker/api/Options';
 import SpellcheckerPlugin from 'tinymce/plugins/fsgspellchecker/Plugin';
@@ -13,7 +14,7 @@ UnitTest.asynctest('browser.tinymce.plugins.fsgspellchecker.SpellcheckerTest', (
   SilverTheme();
   SpellcheckerPlugin();
 
-  const sTestDefaultLanguage = (editor: any/*noImplicitAny*/) => {
+  const sTestDefaultLanguage = (editor: Editor) => {
     return Step.sync(() => {
       Assert.eq('should be same', Options.getLanguage(editor), 'en');
     });
@@ -65,7 +66,7 @@ UnitTest.asynctest('browser.tinymce.plugins.fsgspellchecker.SpellcheckerTest', (
     toolbar: 'fsgspellchecker',
     base_url: '/project/tinymce/js/tinymce',
     statusbar: false,
-    spellchecker_callback: (method: string, _text: any/*noImplicitAny*/, success: any/*noImplicitAny*/, _failure: any/*noImplicitAny*/) => {
+    spellchecker_callback: (method: string, _text: string, success: (data?: any) => void, _failure: (message: string) => void) => {
       if (method === 'spellcheck') {
         success({ words: {
           helo: [ 'hello' ],

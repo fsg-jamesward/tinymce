@@ -24,7 +24,7 @@ const register = (editor: Editor): void => {
     default: 'English=en,Danish=da,Dutch=nl,Finnish=fi,French=fr_FR,German=de,Italian=it,Polish=pl,Portuguese=pt_BR,Spanish=es,Swedish=sv'
   });
 
-  const defaultLanguage = option('language').toString();
+  const defaultLanguage = editor.options.get('language');
   registerOption('spellchecker_language', {
     processor: 'string',
     default: defaultLanguage

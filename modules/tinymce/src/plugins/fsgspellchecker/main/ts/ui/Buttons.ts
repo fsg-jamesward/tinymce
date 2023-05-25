@@ -25,7 +25,7 @@ interface LanguageValue {
 const spellcheckerEvents = 'SpellcheckStart SpellcheckEnd';
 
 const buildMenuItems = (listName: string, languageValues: LanguageValue[]) => {
-  const items: any[]/*noImplicitAny*/ = [];
+  const items: { selectable: boolean; text: string; data: string }[] = [];
 
   Tools.each(languageValues, (languageValue) => {
     items.push({
@@ -39,7 +39,7 @@ const buildMenuItems = (listName: string, languageValues: LanguageValue[]) => {
 };
 
 const getItems = (editor: Editor): LanguageValue[] => {
-  return Tools.map(Options.getLanguages(editor).split(','), (langPair: any/*noImplicitAny*/) => {
+  return Tools.map(Options.getLanguages(editor).split(','), (langPair: string) => {
     const langPairs = langPair.split('=');
 
     return {
@@ -49,7 +49,7 @@ const getItems = (editor: Editor): LanguageValue[] => {
   });
 };
 
-const register = (editor: Editor, pluginUrl: string, startedState: Cell<boolean>, textMatcherState: Cell<DomTextMatcher>, currentLanguageState: Cell<string>, lastSuggestionsState: Cell<LastSuggestion>): void => {
+const register = (editor: Editor, pluginUrl: string, startedState: Cell<boolean>, textMatcherState: Cell<DomTextMatcher | null>, currentLanguageState: Cell<string>, lastSuggestionsState: Cell<LastSuggestion | null>): void => {
   const languageMenuItems = buildMenuItems('Language', getItems(editor));
   const startSpellchecking = () => {
     Actions.spellcheck(editor, pluginUrl, startedState, textMatcherState, lastSuggestionsState, currentLanguageState);

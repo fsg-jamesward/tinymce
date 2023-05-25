@@ -71,7 +71,7 @@ UnitTest.asynctest('browser.tinymce.plugins.fsgspellchecker.SpellcheckerSpanClas
     toolbar: 'fsgspellchecker',
     spellchecker_languages: 'English=en,French=fr,German=de',
     base_url: '/project/tinymce/js/tinymce',
-    spellchecker_callback: (method: any/*noImplicitAny*/, text: string, success: any/*noImplicitAny*/, _failure: any/*noImplicitAny*/) => {
+    spellchecker_callback: (method: string, text: string, success: (data?: any) => void, _failure: (message: string) => void) => {
       if (method === 'spellcheck') {
         success({ dictionary: dict, words: { hello: [ 'word1' ], world: [ 'word2' ], bold: [ 'word3' ] }});
       } else if (method === 'addToDictionary') {

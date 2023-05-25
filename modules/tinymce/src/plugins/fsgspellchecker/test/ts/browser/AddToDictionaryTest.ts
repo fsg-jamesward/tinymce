@@ -11,7 +11,7 @@ UnitTest.asynctest('browser.tinymce.plugins.fsgspellchecker.AddToDictionaryTest'
   SpellcheckerPlugin();
   SilverTheme();
 
-  const dict: any[]/*noImplicitAny*/ = [];
+  const dict: string[] = [];
 
   TinyLoader.setupLight((editor, onSuccess, onFailure) => {
     const api = TinyApis(editor);
@@ -39,7 +39,7 @@ UnitTest.asynctest('browser.tinymce.plugins.fsgspellchecker.AddToDictionaryTest'
     toolbar: 'fsgspellchecker',
     spellchecker_languages: 'English=en,French=fr,German=de',
     base_url: '/project/tinymce/js/tinymce',
-    spellchecker_callback: (method: string, text: any/*noImplicitAny*/, success: any/*noImplicitAny*/, _failure: any/*noImplicitAny*/) => {
+    spellchecker_callback: (method: string, text: string, success: (data?: any) => void, _failure: (message: string) => void) => {
       if (method === 'spellcheck') {
         success({ dictionary: dict, words: { hello: [ 'word1' ], world: [ 'word2' ] }});
       } else if (method === 'addToDictionary') {

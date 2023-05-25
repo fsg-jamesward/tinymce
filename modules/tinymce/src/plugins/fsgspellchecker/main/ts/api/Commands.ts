@@ -14,8 +14,8 @@ import { DomTextMatcher } from '../core/DomTextMatcher';
 
 type LastSuggestion = Actions.LastSuggestion;
 
-const register = (editor: Editor, pluginUrl: string, startedState: Cell<boolean>, textMatcherState: Cell<DomTextMatcher>, lastSuggestionsState: Cell<LastSuggestion>, currentLanguageState: Cell<string>): void => {
-  editor.addCommand('fsgSpellChecker' /*'mceSpellCheck'*/, () => {
+const register = (editor: Editor, pluginUrl: string, startedState: Cell<boolean>, textMatcherState: Cell<DomTextMatcher | null>, lastSuggestionsState: Cell<LastSuggestion | null>, currentLanguageState: Cell<string>): void => {
+  editor.addCommand('fsgSpellChecker' /* mceSpellCheck */, () => {
     Actions.spellcheck(editor, pluginUrl, startedState, textMatcherState, lastSuggestionsState, currentLanguageState);
   });
 };

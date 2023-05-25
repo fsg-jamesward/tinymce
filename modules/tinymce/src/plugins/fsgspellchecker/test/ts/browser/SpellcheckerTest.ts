@@ -2,6 +2,7 @@ import { Log, Pipeline, Step } from '@ephox/agar';
 import { Assert, UnitTest } from '@ephox/bedrock-client';
 import { TinyLoader, TinyUi } from '@ephox/wrap-mcagar';
 
+import Editor from 'tinymce/core/api/Editor';
 import * as Options from 'tinymce/plugins/fsgspellchecker/api/Options';
 import SpellcheckerPlugin from 'tinymce/plugins/fsgspellchecker/Plugin';
 import SilverTheme from 'tinymce/themes/silver/Theme';
@@ -11,7 +12,7 @@ UnitTest.asynctest('browser.tinymce.plugins.fsgspellchecker.SpellcheckerTest', (
   SilverTheme();
   SpellcheckerPlugin();
 
-  const sTestDefaultLanguage = (editor: any/*noImplicitAny*/) => {
+  const sTestDefaultLanguage = (editor: Editor) => {
     return Step.sync(() => {
       Assert.eq('should be same', Options.getLanguage(editor), 'en');
     });

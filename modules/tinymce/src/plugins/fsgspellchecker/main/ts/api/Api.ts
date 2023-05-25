@@ -17,13 +17,13 @@ type LastSuggestion = Actions.LastSuggestion;
 type Data = Actions.Data;
 
 export interface Api {
-  readonly getTextMatcher: () => DomTextMatcher;
+  readonly getTextMatcher: () => DomTextMatcher | null;
   readonly getWordCharPattern: () => RegExp;
   readonly markErrors: (data: Data) => void;
   readonly getLanguage: () => string;
 }
 
-const get = (editor: Editor, startedState: Cell<boolean>, lastSuggestionsState: Cell<LastSuggestion>, textMatcherState: Cell<DomTextMatcher>, currentLanguageState: Cell<string>): Api => {
+const get = (editor: Editor, startedState: Cell<boolean>, lastSuggestionsState: Cell<LastSuggestion | null>, textMatcherState: Cell<DomTextMatcher | null>, currentLanguageState: Cell<string>): Api => {
   const getWordCharPattern = () => {
     return Options.getSpellcheckerWordcharPattern(editor);
   };

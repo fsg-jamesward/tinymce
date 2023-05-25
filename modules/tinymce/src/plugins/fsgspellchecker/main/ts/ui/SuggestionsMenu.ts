@@ -18,11 +18,12 @@ type LastSuggestion = Actions.LastSuggestion;
 
 const ignoreAll = true;
 
-const getSuggestions = (editor: Editor, pluginUrl: string, lastSuggestionsState: Cell<LastSuggestion>, startedState: Cell<boolean>,
-                        textMatcherState: Cell<DomTextMatcher>, currentLanguageState: Cell<string>, word: string, spans: HTMLSpanElement[]): Menu.ContextMenuContents[] => {
+const getSuggestions = (editor: Editor, pluginUrl: string, lastSuggestionsState: Cell<LastSuggestion | null>, startedState: Cell<boolean>,
+                        textMatcherState: Cell<DomTextMatcher | null>, currentLanguageState: Cell<string>, word: string, spans: HTMLSpanElement[]): Menu.ContextMenuContents[] => {
   const items: Menu.ContextMenuContents[] = [];
-  const suggestions = lastSuggestionsState.get().suggestions[word];
+  const lastSuggestion = lastSuggestionsState.get() as LastSuggestion;
 
+  const suggestions = lastSuggestion.suggestions[word];
   Tools.each(suggestions, (suggestion) => {
     items.push({
       text: suggestion,
@@ -34,7 +35,7 @@ const getSuggestions = (editor: Editor, pluginUrl: string, lastSuggestionsState:
     });
   });
 
-  const hasDictionarySupport = lastSuggestionsState.get().hasDictionarySupport;
+  const hasDictionarySupport = lastSuggestion.hasDictionarySupport;
   if (hasDictionarySupport) {
     items.push({ type: 'separator' });
     items.push({
@@ -66,25 +67,21 @@ const getSuggestions = (editor: Editor, pluginUrl: string, lastSuggestionsState:
   return items;
 };
 
-const setup = (editor: Editor, pluginUrl: string, lastSuggestionsState: Cell<LastSuggestion>, startedState: Cell<boolean>,
-               textMatcherState: Cell<DomTextMatcher>, currentLanguageState: Cell<string>): void => {
-  const update = (element: any/*noImplicitAny*/): Menu.ContextMenuContents[] => {
+const setup = (editor: Editor, pluginUrl: string, lastSuggestionsState: Cell<LastSuggestion | null>, startedState: Cell<boolean>,
+               textMatcherState: Cell<DomTextMatcher | null>, currentLanguageState: Cell<string>): void => {
+  const update = (element: Element): Menu.ContextMenuContents[] => {
     const target = element;
     if (target.className === 'mce-spellchecker-word') {
       const elmIndex = Actions.getElmIndex(target);
-      if (elmIndex != null)
-      {
+      if (elmIndex != null) {
         const spans = Actions.findSpansByIndex(editor, elmIndex);
         if (spans.length > 0) {
           const rng = editor.dom.createRng();
           rng.setStartBefore(spans[0]);
           rng.setEndAfter(spans[spans.length - 1]);
           editor.selection.setRng(rng);
-          const dataMCEWord = target.getAttribute('data-mce-word');
-          if (typeof dataMCEWord == "string")
-          {
-            return getSuggestions(editor, pluginUrl, lastSuggestionsState, startedState, textMatcherState, currentLanguageState, dataMCEWord, spans);
-          }
+          const word = target.getAttribute('data-mce-word') as string;
+          return getSuggestions(editor, pluginUrl, lastSuggestionsState, startedState, textMatcherState, currentLanguageState, word, spans);
         }
       }
     }

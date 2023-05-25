@@ -12,7 +12,7 @@ import Tools from 'tinymce/core/api/util/Tools';
 
 import * as Events from '../api/Events';
 import * as Options from '../api/Options';
-import { DomTextMatcher } from './DomTextMatcher';
+import { DomTextMatcher, Match } from './DomTextMatcher';
 
 export interface Data {
   readonly words: Record<string, string[]>;
@@ -24,21 +24,22 @@ export interface LastSuggestion {
   readonly hasDictionarySupport: boolean;
 }
 
-const getTextMatcher = (editor: Editor, textMatcherState: any/*noImplicitAny*/) => {
-  if (!textMatcherState.get()) {
-    const textMatcher = DomTextMatcher(editor.getBody(), editor);
+const getTextMatcher = (editor: Editor, textMatcherState: Cell<DomTextMatcher | null>): DomTextMatcher => {
+  let textMatcher = textMatcherState.get();
+  if (!textMatcher) {
+    textMatcher = DomTextMatcher(editor.getBody(), editor);
     textMatcherState.set(textMatcher);
   }
 
-  return textMatcherState.get();
+  return textMatcher;
 };
 
-const sendRpcCall = (editor: Editor, pluginUrl: string, currentLanguageState: Cell<string>, name: string, data: string, successCallback: (data?: any) => void, errorCallback: (message : string) => void): void => {
+const sendRpcCall = (editor: Editor, pluginUrl: string, currentLanguageState: Cell<string>, name: string, data: string, successCallback: (data?: any) => void, errorCallback: (message: string) => void): void => {
   const userSpellcheckCallback = Options.getSpellcheckerCallback(editor);
   userSpellcheckCallback.call(editor.plugins.spellchecker, name, data, successCallback, errorCallback);
 };
 
-const spellcheck = (editor: Editor, pluginUrl: string, startedState: Cell<boolean>, textMatcherState: Cell<DomTextMatcher>, lastSuggestionsState: Cell<LastSuggestion>, currentLanguageState: Cell<string>): void => {
+const spellcheck = (editor: Editor, pluginUrl: string, startedState: Cell<boolean>, textMatcherState: Cell<DomTextMatcher | null>, lastSuggestionsState: Cell<LastSuggestion | null>, currentLanguageState: Cell<string>): void => {
   if (finish(editor, startedState, textMatcherState)) {
     return;
   }
@@ -58,13 +59,13 @@ const spellcheck = (editor: Editor, pluginUrl: string, startedState: Cell<boolea
   editor.focus();
 };
 
-const checkIfFinished = (editor: Editor, startedState: Cell<boolean>, textMatcherState: Cell<DomTextMatcher>): void => {
+const checkIfFinished = (editor: Editor, startedState: Cell<boolean>, textMatcherState: Cell<DomTextMatcher | null>): void => {
   if (!editor.dom.select('span.mce-spellchecker-word').length) {
     finish(editor, startedState, textMatcherState);
   }
 };
 
-const addToDictionary = (editor: Editor, pluginUrl: string, startedState: Cell<boolean>, textMatcherState: Cell<DomTextMatcher>, currentLanguageState: Cell<string>, word: string, spans: Element[]): void => {
+const addToDictionary = (editor: Editor, pluginUrl: string, startedState: Cell<boolean>, textMatcherState: Cell<DomTextMatcher | null>, currentLanguageState: Cell<string>, word: string, spans: Element[]): void => {
   editor.setProgressState(true);
 
   sendRpcCall(editor, pluginUrl, currentLanguageState, 'addToDictionary', word, () => {
@@ -77,7 +78,7 @@ const addToDictionary = (editor: Editor, pluginUrl: string, startedState: Cell<b
   });
 };
 
-const ignoreWord = (editor: Editor, startedState: Cell<boolean>, textMatcherState: Cell<DomTextMatcher>, word: string, spans: Element[], all?: boolean): void => {
+const ignoreWord = (editor: Editor, startedState: Cell<boolean>, textMatcherState: Cell<DomTextMatcher | null>, word: string, spans: Element[], all?: boolean): void => {
   editor.selection.collapse();
 
   if (all) {
@@ -93,12 +94,12 @@ const ignoreWord = (editor: Editor, startedState: Cell<boolean>, textMatcherStat
   checkIfFinished(editor, startedState, textMatcherState);
 };
 
-const finish = (editor: Editor, startedState: Cell<boolean>, textMatcherState: Cell<DomTextMatcher>) => {
+const finish = (editor: Editor, startedState: Cell<boolean>, textMatcherState: Cell<DomTextMatcher | null>) => {
   const bookmark = editor.selection.getBookmark();
   getTextMatcher(editor, textMatcherState).reset();
   editor.selection.moveToBookmark(bookmark);
 
-  textMatcherState.set(null!);
+  textMatcherState.set(null);
 
   if (startedState.get()) {
     startedState.set(false);
@@ -108,7 +109,7 @@ const finish = (editor: Editor, startedState: Cell<boolean>, textMatcherState: C
   return false;
 };
 
-const getElmIndex = (elm: HTMLElement): string|null => {
+const getElmIndex = (elm: Element): string | null => {
   const value = elm.getAttribute('data-mce-index');
 
   if (typeof value === 'number') {
@@ -139,7 +140,7 @@ const findSpansByIndex = (editor: Editor, index: string): HTMLSpanElement[] => {
   return spans;
 };
 
-const markErrors = (editor: Editor, startedState: Cell<boolean>, textMatcherState: Cell<DomTextMatcher>, lastSuggestionsState: Cell<LastSuggestion>, data: Data): void => {
+const markErrors = (editor: Editor, startedState: Cell<boolean>, textMatcherState: Cell<DomTextMatcher | null>, lastSuggestionsState: Cell<LastSuggestion | null>, data: Data): void => {
   const hasDictionarySupport = !!data.dictionary;
   const suggestions = data.words;
 
@@ -161,7 +162,7 @@ const markErrors = (editor: Editor, startedState: Cell<boolean>, textMatcherStat
 
   getTextMatcher(editor, textMatcherState).find(Options.getSpellcheckerWordcharPattern(editor)).filter((match: any) => {
     return !!suggestions[match.text];
-  }).wrap((match: any/*noImplicitAny*/) => {
+  }).wrap((match: Match) => {
     return editor.dom.create('span', {
       'class': 'mce-spellchecker-word',
       'aria-invalid': 'spelling',
